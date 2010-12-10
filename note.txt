@@ -1,0 +1,57 @@
+***TODO
+how interface should provide to non-authrequired api.
+hot interface should provide to web app.
+streaming api
+
+*** ChangeLog
+2010/11/04 Write base code including OAuth association
+2010/11/20 Write base code for calling api
+2010/11/20 Support Tweets resource
+2010/11/20 Support Timeline resources
+2010/11/20 Support Legal resources
+2010/11/20 Support Help resources
+2010/11/20 Support Spam Reporting resources
+2010/11/20 Support Trends resources
+2010/11/20 Support Favorites resources
+2010/11/20 Support Direct Messages resources
+2010/11/20 Support Saved Searches resources
+2010/11/21 Support User resources
+2010/11/21 Support Local Trends resources
+2010/11/24 Override API.__repr__ for easy use and debugging
+2010/11/24 Support Account resources
+2010/11/24 Support Blocks resources
+2010/11/24 Support Notification resources
+2010/11/25 Support Friendships resources
+2010/11/25 Support List resources
+
+** Progress
+100 Timeline
+100 Tweets
+100 User
+100 Trends
+100 Local Trends
+100 List
+ 90 List Members
+ 90 List Subscribers
+100 Direct Messages
+100 Friendship
+100 Friends and Followers Friendship
+100 Account
+100 Favorites
+100 Notifications
+100 Block
+100 Spam Reporting
+100 Saved Searches
+100 OAuth
+  0 Geo
+100 Legal
+100 Help
+  0 Streamed Tweets
+  0 Search
+
+2010/11/20  9/23
+2010/11/22 11/23
+2010/11/24 15/23
+2010/11/25 16/23
+
+
