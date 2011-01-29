@@ -249,6 +249,12 @@ class TwitterOAuth(object):
         dic = cgi.parse_qs(cont)
         self.atok.tok = dic['oauth_token'][0]
         self.atok.sec = dic['oauth_token_secret'][0]
+    
+    def setAccessToken(self, key, sec):
+        # TODO: validate passed access token
+        self.atok.tok = key
+        self.atok.sec = sec
+        self.authdone = True
         
     def apicall(self, method, path, **kwargs):
         method = method.upper()
@@ -886,3 +892,96 @@ class UserStream(StreamBase):
             self.first = False
         return StreamBase.next(self)
 
+
+# ----------------------------------------
+# 2011/01/30~
+
+class EventHandler(object):
+    def __init__(self, api):
+        self.api = api
+
+class PollingHandler(EventHandler):
+    def __init__(self, api):
+        super(PollingHandler, self).__init__(api)
+    def onEvent(self, _dummy):
+        self.callback()
+    def callback(self):
+        pass
+
+class UserStreamHandler(EventHandler):
+    def __init__(self, api):
+        super(UserStreamHandler, self).__init__(api)
+        self.user = api.account.verify_credentials()
+    def onEvent(self, jsondoc):
+        self.onAllEvent(jsondoc)
+        if 'delete' in jsondoc:
+            self.onDelete(jsondoc)
+        else:
+            m = '@' + self.user['screen_name']
+            self.onUpdate(jsondoc)
+            if m in jsondoc['text']:
+                self.onMention(jsondoc)
+    def onAllEvent(self, jsondoc):
+        pass
+    def onDelete(self, jsondoc):
+        pass
+    def onFavorite(self, jsondoc):
+        pass
+    def onUpdate(self, jsondoc):
+        pass
+
+class StreamHandler(EventHandler):
+    def __init__(self, api):
+        pass
+    
+
+class Action(object):
+    def __init__(self, api, handler):
+        self.api = api
+        self._handler = handler(api)
+    def start(self):
+        for jsondoc in self:
+            self._handler.onEvent(jsondoc)
+    def __iter__(self):
+        return self
+    def next(self):
+        raise StopIteration()
+    def onEvent(self, jsondoc):
+        pass
+
+import time
+class PollingAction(Action):
+    def __init__(self, api, handler, waittime=60):
+        super(PollingAction, self).__init__(api, handler)
+        self._waittime = waittime
+        self.__first = True
+    def next(self):
+        if not self.__first:
+            time.sleep(self._waittime)
+        else:
+            self.__first = False
+        return {}
+
+class StreamAction(Action):
+    def __init__(self, api, handler, streamtype='filter'):
+        super(StreamAction, self).__init__(api, handler)
+        self.stream = api.streaming.filter()
+    def __iter__(self):
+        return self.stream
+
+class UserStreamAction(Action):
+    def __init__(self, api, handler):
+        super(UserStreamAction, self).__init__(api, handler)
+        self.stream = api.userstreaming.user()
+    def __iter__(self):
+        return self.stream
+
+#    
+# class Handler(UserStreamHandler):
+#     def onMention(self, status):
+#         src = status['user']['screen_name']
+#         self.api.statuses.update(status=u'@%s hello' % src)
+# 
+# act = UserStreamAction(api, Handler())
+# act.start()
+#
