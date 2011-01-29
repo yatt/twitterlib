@@ -47,7 +47,7 @@ streaming api
   0 Geo
 100 Legal
 100 Help
-  0 Streamed Tweets
+ 90 Streamed Tweets
   0 Search
 
 2010/11/20  9/23
