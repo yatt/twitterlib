@@ -23,6 +23,7 @@ streaming api
 2010/11/24 Support Notification resources
 2010/11/25 Support Friendships resources
 2010/11/25 Support List resources
+2011/01/25 Support Streaming API, User Streaming API support
 
 ** Progress
 100 Timeline

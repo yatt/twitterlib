@@ -1,63 +1,6 @@
 #!/usr/bin/python2.6
 # coding: utf-8
 
-#
-# ***TODO
-# how interface should provide to non-authrequired api.
-# hot interface should provide to web app.
-# streaming api
-
-# *** ChangeLog
-# 2010/11/04 Write base code including OAuth association
-# 2010/11/20 Write base code for calling api
-# 2010/11/20 Support Tweets resource
-# 2010/11/20 Support Timeline resources
-# 2010/11/20 Support Legal resources
-# 2010/11/20 Support Help resources
-# 2010/11/20 Support Spam Reporting resources
-# 2010/11/20 Support Trends resources
-# 2010/11/20 Support Favorites resources
-# 2010/11/20 Support Direct Messages resources
-# 2010/11/20 Support Saved Searches resources
-# 2010/11/21 Support User resources
-# 2010/11/21 Support Local Trends resources
-# 2010/11/24 Override API.__repr__ for easy use and debugging
-# 2010/11/24 Support Account resources
-# 2010/11/24 Support Blocks resources
-# 2010/11/24 Support Notification resources
-# 2010/11/25 Support Friendships resources
-# 2010/11/25 Support List resources
-#
-# ** Progress
-# 100 Timeline
-# 100 Tweets
-# 100 User
-# 100 Trends
-# 100 Local Trends
-# 100 List
-#  90 List Members
-#  90 List Subscribers
-# 100 Direct Messages
-# 100 Friendship
-# 100 Friends and Followers Friendship
-# 100 Account
-# 100 Favorites
-# 100 Notifications
-# 100 Block
-# 100 Spam Reporting
-# 100 Saved Searches
-# 100 OAuth
-#   0 Geo
-# 100 Legal
-# 100 Help
-#   0 Streamed Tweets
-#   0 Search
-#
-# 2010/11/20  9/23
-# 2010/11/22 11/23
-# 2010/11/24 15/23
-# 2010/11/25 16/23
-
 import uuid
 import time
 import hmac
@@ -67,6 +10,11 @@ import urllib2
 import cookielib
 import simplejson
 import cgi
+import json
+
+# え、効かないけど・・・
+#import socket
+#socket.setdefaulttimeout(1)
 
 #
 # class MyClient(TwitterOAuth):
@@ -123,8 +71,50 @@ class Token(object):
         self.tok = tok
         self.sec = sec
 
+#
+# +--------------+
+# |     User     |
+# +--------------+
+#     |     |  apicall
+#    str  conn
+#     |     | (streaming)
+# +--------------+
+# |     API      |
+# +--------------+
+#        |     apicall
+#       conn
+#        |
+# +--------------+
+# | TwitterOAuth |
+# +--------------+
+#        |
+# +-----------------------+
+# |   Internet            |
+# +-----------------------+
+#
+
+import sys
+class Logger(object):
+    def __init__(self, level=1, out=sys.stdout):
+        self.level = level
+        self.out = out
+    def log(self, level, *message):
+        if not isinstance(level, int):
+            raise Exception('int expected for argument `level\'.')
+        if level > self.level:
+            self.out.write(str(level) + ' ' + ' '.join(map(str, message)) + '\n')
+logger = Logger()
+
+# やっぱり、最初から最後までAPIからコントロールするべきなんじゃないかと思う
+#
+# api = API oauth()
+# for status in api.streaming.filter():
+#     print status
+#
 class TwitterOAuth(object):
     Site = 'api.twitter.com'
+    StreamSite = 'stream.twitter.com'
+    UserStreamSite = 'userstream.twitter.com'
     def __init__(self, consumer_key, consumer_secret, use_https=False):
         self.scheme = 'http' + ['', 's'][use_https]
         self.ctok = Token(consumer_key, consumer_secret)
@@ -139,19 +129,27 @@ class TwitterOAuth(object):
     def authorized(self):
         return self.authdone
         
-    def loadAccessToken(self):
-        pass
-    def saveAccessToken(self, tokenpair):
-        pass
-    def verify(self, url):
-        pass
-    def getAccount(self):
-        pass
-
     def p(self, path):
-        return self.scheme + '://' + TwitterOAuth.Site + path
+        site = TwitterOAuth.Site
+        scheme = self.scheme
+        logger.log(0, 'OAuth.p path :',path)
+        if path[0] == 'u':
+            # user stream is https only
+            # http://dev.twitter.com/pages/user_streams#ImportantItems
+            logger.log(0, '*** userstreaming')
+            scheme = 'https'
+        if path[0] in 'us':
+            site = {
+                's': TwitterOAuth.StreamSite,
+                'u': TwitterOAuth.UserStreamSite
+                }[path[0]]
+            path = path[1:]
+        url = scheme + '://' + site + path
+        logger.log(0, 'OAuth.p oauth:',url)
+        return url
     
-    # 2010/11/24 urlが/account/update_profileと被るのでアンダースコア付加
+    # argument `url' will be hided when variable `url' is passed as keyword argument
+    # for api calling
     def buildRequest(self, method, _url, **kwargs):
         # build urllib2.Request instance with oauth
         
@@ -170,7 +168,7 @@ class TwitterOAuth(object):
         }
         q = lambda s: urllib.quote(s, '')
         qq = lambda s: urllib.quote(s, '~')
-        print 'args:', kwargs
+        logger.log(0, 'args:', kwargs)
         for key in kwargs:
             value = kwargs[key]
             if isinstance(value, unicode):
@@ -179,17 +177,15 @@ class TwitterOAuth(object):
                 dat[key] = str(value)
         # sign
         prm = '&'.join('%s=%s' % (q(k), qq(dat[k])) for k in sorted(dat))
-        # 2010/11/7 self.rtok.secとあるけどapi呼び出しの時はアクセストークンシークレットだぞ。
-        key = '%s&%s' % (self.ctok.sec, self.rtok.sec)
-        if not self.atok.sec is None:
-            key = '%s&%s' % (self.ctok.sec, self.atok.sec)
+        # right side key is access token secret if session is for api calling,
+        # request token secret for others.
+        key = '%s&%s' % (self.ctok.sec, [self.atok.sec, self.rtok.sec][self.atok.sec is None])
         msg = '&'.join([method, q(_url), q(prm)])
         sig = hmac.new(key, msg, hashlib.sha1)
         dat['oauth_signature'] = sig.digest().encode('base64').strip()
         # build request parameter line (including oauth_signature)
         prm = '&'.join('%s=%s' % (q(k), qq(dat[k])) for k in sorted(dat))
-        # 
-        method = method.upper()
+        method = method.upper() # normalize
         req_url = _url
         authkeys = sorted([
             'oauth_consumer_key',
@@ -201,24 +197,30 @@ class TwitterOAuth(object):
             'oauth_version',
             ])
         if method == 'GET':
-            #req_url += '?' + prm
-            ## ugly!
-            if _url.startswith('http://api.twitter.com/oauth') or _url.startswith('https://api.twitter.com/oauth'):
+            if _url.startswith('http://' + TwitterOAuth.Site + '/oauth') or \
+               _url.startswith('https://' + TwitterOAuth.Site + '/oauth'):
                 req_url += '?' + prm
             else:
                 prm = '&'.join('%s=%s' % (q(k), qq(dat[k])) for k in sorted(dat) if not k in authkeys)
-                req_url += '?' + prm
-            print 'req_url:',req_url
+                if prm != '':
+                    req_url += '?' + prm
+            logger.log(0, 'req_url:',req_url)
         req = urllib2.Request(url=req_url)
         if method == 'POST':
             req.add_data(prm)
-            print 'req_data:',req.get_data()
+            logger.log(0, 'req_data:',req.get_data())
+        
         # signature requires additional parameters
         # but authorization headaer doesn't requires
-        # those of them
-        
+        # those of them.
         # variable injection
-        req.authheader = ','.join('%s=%s' % (q(k), qq(dat.get(k, ''))) for k in authkeys)
+        #req.authheader = ','.join('%s=%s' % (q(k), qq(dat.get(k, ''))) for k in authkeys)
+        #
+        # HTTP 500 matters:
+        # http://groups.google.com/group/twitter-development-talk/browse_thread/thread/d0178df0b370c12a/70cbcd8f92c6d649?lnk=gst&q=500+streaming#70cbcd8f92c6d649
+        # > It is working now after I quoted the oauth values. 
+        req.authheader = ','.join('%s="%s"' % (q(k), qq(dat.get(k, ''))) for k in authkeys)
+        
         return req
     
     def getRequestToken(self):
@@ -252,25 +254,28 @@ class TwitterOAuth(object):
         method = method.upper()
         url = self.p(path)
         req = self.buildRequest(method, url, oauth_token=self.atok.tok, **kwargs)
-        print 'url:', req.get_full_url()
+        logger.log(0, 'url:', req.get_full_url())
+        logger.log(0, 'authorization header:',req.authheader)
         self.opener.addheaders = [('Authorization', 'OAuth ' + req.authheader)]
         postdata = urllib.urlencode(kwargs)
-        print 'param line:',postdata
+        logger.log(0, 'param line:',postdata)
         if method == 'POST':
             req.add_data(postdata)
         try:
+            logger.log(0, '- open')
             conn = self.opener.open(req)
-            cont = conn.read()
-            return simplejson.loads(cont)
+            logger.log(0, '- opened')
+            return conn
         except urllib2.HTTPError, e:
             raise e
     
     def login(self):
+        # TODO: implement
         """
         login to twitter via web
         """
         # login via web if not logged in
-        username,password = self.getAccount()
+        username,password = self.loadAccount()
         # requie: has session <- login
         dat = {
             'session[username_or_email]': username,
@@ -291,14 +296,13 @@ class TwitterOAuth(object):
         fp = open('out.html', 'w')
         fp.write(conn.read())
         fp.close()
-        
-            
+    
     def auth(self):
         """
         authenticate with OAuth
         application can call api after calling this method
         """
-        if self.authdone:
+        if self.authorized:
             return
         ret = self.loadAccessToken()
         if ret is None:
@@ -313,9 +317,61 @@ class TwitterOAuth(object):
             self.atok.tok = ret[0]
             self.atok.sec = ret[1]
         self.authdone = True
+    
+    #
+    # methods to be customized 
+    #  - save/load consumer token
+    #  - save/load request token
+    #  - save/load access token
+    #  - save/load verifier
+    #  - save/load user account
+    #  - verify
+    #
+    def saveAccessToken(self, token):
+        return None
+    def loadAccessToken(self):
+        return None
 
+    def saveVerifier(self, verifier):
+        return None
+    def loadVerifier(self):
+        return None
+    def verify(self, url):
+        print 'access url below and input pin code: ', url
+        pin = raw_input('input pin code: ')
+        return pin
+
+    def saveRequestToken(self, token):
+        return None
+    def loadRequestToken(self):
+        return None
+    
+    def saveConsumerToken(self, token):
+        return None
+    def loadConsumerToken(self):
+        return None
+    
+    def saveUserAccount(self, username, password):
+        return None
+    def loadUserAccount(self):
+        return None
+
+
+#
+# 認証系のAPIのレスポンスをdictに変換するようにすれば、
+# 認証まで含めてAPIに処理を外部化できるかもしれない。
+#
+#
 
 paraminfo = [
+    # streaming api
+    ['count', int, False],
+    ['delimited', str, False],
+    ['follow', int, False],
+    ['track', str, False],
+    #
+    
+    
     ['list_id', str, True],
     
     ['id', int, False],
@@ -333,16 +389,16 @@ paraminfo = [
     ['user_a', str, True], 
     ['user_b', str, True], 
     
-    ['follow',                str, False],
+    ['follow', str, False],
     
-    ['name',                  unicode, False],
-    ['url',                   str, False],
-    ['location',              unicode, False],
-    ['description',           unicode, False],
+    ['name', unicode, False],
+    ['url', str, False],
+    ['location', unicode, False],
+    ['description', unicode, False],
 
-    ['tile',                  bool, False],
+    ['tile', bool, False],
     
-    ['image',                 str, True],
+    ['image', str, True],
     
     ['profile_background_color', str, False],
     ['profile_text_color',    str, False],
@@ -369,7 +425,7 @@ paraminfo = [
     ['in_reply_to_status_id', int, False],
     ['status',                unicode, True],
     ['id',                    int, True],
-    ['user_id',               str, False],
+    ['user_id',               int, False],
     ['screen_name',           str, False],
     ['include_rts',           bool, False],
     ['page',                  int,  False],
@@ -389,7 +445,6 @@ apiinfo = {
     },
     'statuses': {
         # Timeline resources
-        # 2010/11/20
         'public_timeline'     : [0b000, 0x3],
         'home_timeline'       : [0b011, 0x1f],
         'friends_timeline'    : [0b011, 0x7f],
@@ -403,9 +458,7 @@ apiinfo = {
         'show/:id'            : [0b011, 0x203],
         'update'              : [0b110, 0x1fc03],
         'destroy/:id'         : [0b110, 0x203],
-        # 2010/11/20 下の二つ。公式ドキュメントでは認証不要になってるけど認証を要求されるんだけど。どういうことだよ。
         'retweet/:id'         : [0b110, 0x203],
-        # 実行できねえ。なぜだろ
         #'retweets/:id'        : [0b011, 0x203],
         ':id/retweeted_by': {
             ''                : [0b011, 0x1b],
@@ -552,17 +605,53 @@ apiinfo = {
     ':user/:list_id/subscribers_delete': [0b110, 1<<50],
     # TODO: test
     ':user/:list_id/issubscriberof/:id': [0b011, 0x4000000000202],
+    
+
+    #
+    # Streaming API
+    #
+    'streaming': {
+        'statuses': {
+            # http://dev.twitter.com/doc/post/statuses/filter
+            'filter'   : [0b110, (1<<51)+(1<<52)+(1<<53)+(1<<54)],
+            'firehose' : [0b011, (1<<53)+(1<<54)],
+            'retweet'  : [0b011, 1<<53],
+            'sample'   : [0b011, (1<<53)+(1<<54)],
+            },   
+    },
+    
+    #
+    # User Streaming API
+    #
+    'userstreaming': {
+        # http://dev.twitter.com/pages/user_streams
+        'user': [0b010, 0]
+    }
+    
+    #
+    # Site Streaming API
+    #
+    # future support
 }
 
 class API(object):
-    def __init__(self, oauthobj, version=1, format='json', path=[], current=apiinfo):
+    callcount = 0
+    def __init__(self, oauthobj, version=1, format='json', path=[], current=apiinfo, streaming_version=1, userstreaming_version=2):
         self._oauthobj = oauthobj
         self._version = version
+        self._streaming_version = streaming_version
+        self._userstreaming_version = userstreaming_version
         self._format = format
         self._path = path
         self._current = current
     def p(self, relpath):
-        path = '/' + str(self._version) + relpath + '.' + self._format
+        if relpath.startswith('/streaming'):
+            path = 's/' + str(self._streaming_version) + relpath[len('/streaming'):]
+        elif relpath.startswith('/userstreaming'):
+            path = 'u/' + str(self._userstreaming_version) + relpath[len('/userstreaming'):]
+        else:
+            path = '/' + str(self._version) + relpath
+        path = path + '.' + self._format
         return path
     def buildparams(self, pinfo):
         ps = []
@@ -575,14 +664,31 @@ class API(object):
             m += 1
         return ps
     def apicall(self, method, relpath, auth_required, rate_limited, **kwargs):
+        API.callcount += 1
         method = method.upper()
         path = self.p(relpath)
         
-        print 'path:',path
-        print 'param:',kwargs
+        logger.log(0, 'relpath:',relpath)
+        logger.log(0, 'path:',path)
+        logger.log(0, 'param:',kwargs)
+        
+        # wrap
+        if path[0] in 'us':
+            kwargs['delimited'] = 'length'
        
         if auth_required:
-            return self._oauthobj.apicall(method, path, **kwargs)
+            try:
+                conn = self._oauthobj.apicall(method, path, **kwargs)
+            except Exception, e:
+                raise e
+            if relpath.startswith('/streaming'):
+                logger.log(0, '**Streaming')
+                return Stream(conn, self)
+            if relpath.startswith('/userstreaming'):
+                logger.log(0, '**User Streaming')
+                return UserStream(conn, self)
+            cont = conn.read()
+            return self.asvalidformat(cont)
         url = self._oauthobj.p(path)
         data = urllib.urlencode(kwargs)
         fun = {
@@ -593,14 +699,15 @@ class API(object):
         try:
             conn = fun[method]()
             cont = conn.read()
-            if 'profile_image' in relpath: # return actual image
-                return cont
-            jsonobj = simplejson.loads(cont)
-            return jsonobj
+            return self.asvalidformat(cont)
         except Exception, e:
             #raise e
             return cont
-    # 2010/11/20
+    def asvalidformat(self, cont):
+        #if 'profile_image' in relpath: # return actual image
+        #    return cont
+        if self._format == 'json':
+            return simplejson.loads(cont)
     # :idを含むやつは、飛ばしてアクセスする.パラメータにidを要求する。
     # （APIのパラメータに必要かどうかは関係なく。）
     # /yy/:id/xxxなら
@@ -652,7 +759,7 @@ class API(object):
                 kwargs['_method'] = 'DELETE'
             if 'issubscriberof' in x:
                 x = x.replace('issubscriberof', 'subscribers')
-            print '!',x
+            logger.log(0, '!',x)
             return x
         pinfo        = info[1]
         info         = info[0]
@@ -679,8 +786,8 @@ class API(object):
             param['_method'] = kwargs['_method']
         
         try:
-            jsonobj = self.apicall(method, path, authrequired, limitexists, **param)
-            return jsonobj
+            ret = self.apicall(method, path, authrequired, limitexists, **param)
+            return ret
         except Exception, e:
             raise e
 
@@ -716,19 +823,66 @@ class API(object):
             return '<%s %s>' % (self._path[-1], ','.join(self._current.keys()))
         return '<%s(callable) %s>' % (self._path[-1], ','.join(map(lambda s: ['','*'][s[2]] + s[0], self.buildparams(self._current[1]))))
         
+##################################################
+# streaming data wrapper
+##################################################
+class StreamBase(object):
+    def __init__(self, conn, api):
+        # delimited=lengthを指定していること.
+        self.conn = conn
+        self.api = api
+    def __iter__(self):
+        return self
+    def RecoveryConnection(self, maxtry=10):
+        wait = 1
+        ntry = 0
+        while True:
+            try:
+                # TODO: 前回接続時のリクエストを記憶しておく必要
+                self.conn = request
+                return
+            except:
+                ntry += 1
+                wait *= 2
+                if ntry >= maxtry:
+                    raise Exception('Connection Failure')
+                time.sleep(wait)
+            
+    def fetchLine(self):
+        while True:
+            line = self.conn.readline()
+            if line.strip() != '': # 接続維持のための空行
+                return line
+    def next(self):
+        #bytelength = int(self.fetchLine())
+        length = self.fetchLine()
+        #print 'delimited length:',length
+        jsonstr = self.fetchLine()
+        #print 'content:',jsonstr
+        try:
+            return json.loads(jsonstr)
+        except Exception, e:
+            self.recovery()
 
-# utility
-class SimpleTwitterOAuth(TwitterOAuth):
-    def setAccessToken(self, access_token, access_token_secret):
-        self.atok.tok = access_token
-        self.atok.sec = access_token_secret
-    def verify(self, url):
-        print 'access url below and input pin code: ', url
-        pin = raw_input('pin code: ')
-        return pin
+class Stream(StreamBase):
+    def __init__(self, conn, api):
+        super(Stream, self).__init__(conn, api)
+    def next(self):
+        return StreamBase.next(self)
 
-def main():
-    pass
+# delimitedじゃない生の接続がほしいときはどうすればいいの？
+# -> あとまわし。大抵はラッパーつかう。
 
-if __name__ == '__main__':
-    main()
+class UserStream(StreamBase):
+    def __init__(self, conn, api):
+        super(UserStream, self).__init__(conn, api)
+        self.first = True
+    def next(self):
+        # ref: http://dev.twitter.com/pages/user_streams#Schema
+        if self.first:
+            self.fetchLine() # delimited length
+            self.friends = self.fetchLine()
+            #print 'friends', self.friends
+            self.first = False
+        return StreamBase.next(self)
+
