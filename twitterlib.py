@@ -976,6 +976,10 @@ class UserStreamAction(Action):
     def __iter__(self):
         return self.stream
 
+class DictWrap(dict):
+    def __getattr__(self, name):
+        return self.get(name, None)
+
 #    
 # class Handler(UserStreamHandler):
 #     def onMention(self, status):
