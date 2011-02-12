@@ -713,7 +713,7 @@ class API(object):
         #if 'profile_image' in relpath: # return actual image
         #    return cont
         if self._format == 'json':
-            return simplejson.loads(cont)
+            return DictWrap(json.loads(cont))
     # :idを含むやつは、飛ばしてアクセスする.パラメータにidを要求する。
     # （APIのパラメータに必要かどうかは関係なく。）
     # /yy/:id/xxxなら
