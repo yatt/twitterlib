@@ -713,7 +713,10 @@ class API(object):
         #if 'profile_image' in relpath: # return actual image
         #    return cont
         if self._format == 'json':
-            return DictWrap(json.loads(cont))
+            d = json.loads(cont)
+            d = objectwrap(d)
+            return d
+
     # :idを含むやつは、飛ばしてアクセスする.パラメータにidを要求する。
     # （APIのパラメータに必要かどうかは関係なく。）
     # /yy/:id/xxxなら
@@ -866,7 +869,7 @@ class StreamBase(object):
         jsonstr = self.fetchLine()
         #print 'content:',jsonstr
         try:
-            return json.loads(jsonstr)
+            return DictWrap(json.loads(jsonstr))
         except Exception, e:
             self.recovery()
 
@@ -979,6 +982,15 @@ class UserStreamAction(Action):
 class DictWrap(dict):
     def __getattr__(self, name):
         return self.get(name, None)
+def objectwrap(item):
+    if type(item) == dict:
+        item = DictWrap(item)
+        for k in item:
+            item[k] = objectwrap(item[k])
+    elif type(item) == list:
+        for i in xrange(len(item)):
+            item[i] = objectwrap(item[i])
+    return item
 
 #    
 # class Handler(UserStreamHandler):
