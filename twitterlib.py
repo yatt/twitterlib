@@ -8,7 +8,8 @@ import hashlib
 import urllib
 import urllib2
 import cookielib
-import simplejson
+#import simplejson
+import json
 import cgi
 import json
 
