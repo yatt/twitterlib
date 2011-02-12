@@ -869,7 +869,7 @@ class StreamBase(object):
         jsonstr = self.fetchLine()
         #print 'content:',jsonstr
         try:
-            return DictWrap(json.loads(jsonstr))
+            return objectwrap(json.loads(jsonstr))
         except Exception, e:
             self.recovery()
 
