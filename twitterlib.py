@@ -442,60 +442,60 @@ paraminfo = [
     ['trim_user',             bool, False],
 ]
 apiinfo = {
-    'report_spam'            : [0b110, 0x182],
+    'report_spam'            : [6, 0x182],
     'saved_searches': {
-        ''                   : [0b011, 0],
-        'show/:id'           : [0b011, 0x200],
-        'create'             : [0b110, 0x1000000],
-        'destroy/:id'        : [0b110, 0x200],
+        ''                   : [3, 0],
+        'show/:id'           : [2, 0x200],
+        'create'             : [6, 0x1000000],
+        'destroy/:id'        : [6, 0x200],
     },
     'statuses': {
         # Timeline resources
-        'public_timeline'     : [0b000, 0x3],
-        'home_timeline'       : [0b011, 0x1f],
-        'friends_timeline'    : [0b011, 0x7f],
-        'user_timeline'       : [0b011, 0x1ff],
-        'mentions'            : [0b011, 0x7f],
-        'retweeted_by_me'     : [0b011, 0x3f],
-        'retweeted_to_me'     : [0b011, 0x3f],
-        'retweets_of_me'      : [0b011, 0x3f],
+        'public_timeline'     : [0, 0x3],
+        'home_timeline'       : [3, 0x1f],
+        'friends_timeline'    : [3, 0x7f],
+        'user_timeline'       : [3, 0x1ff],
+        'mentions'            : [3, 0x7f],
+        'retweeted_by_me'     : [3, 0x3f],
+        'retweeted_to_me'     : [3, 0x3f],
+        'retweets_of_me'      : [3, 0x3f],
 
         # Tweets resources    
-        'show/:id'            : [0b011, 0x203],
-        'update'              : [0b110, 0x1fc03],
-        'destroy/:id'         : [0b110, 0x203],
-        'retweet/:id'         : [0b110, 0x203],
+        'show/:id'            : [3, 0x203],
+        'update'              : [6, 0x1fc03],
+        'destroy/:id'         : [6, 0x203],
+        'retweet/:id'         : [6, 0x203],
         #'retweets/:id'        : [0b011, 0x203],
         ':id/retweeted_by': {
-            ''                : [0b011, 0x1b],
-            'ids'             : [0b011, 0x1b],
+            ''                : [3, 0x1b],
+            'ids'             : [3, 0x1b],
             },
         
         
-        'friends'  : [0b011, 0x400182],
-        'followers': [0b011, 0x400182],
+        'friends'  : [3, 0x400182],
+        'followers': [3, 0x400182],
     },
     'users': {
-        'show'  : [0b001, 0x182],
+        'show'  : [1, 0x182],
         # TODO: test
-        'lookup': [0b011, 0x182],
+        'lookup': [3, 0x182],
         # TODO: test
-        'search': [0b011, 0x300022],
+        'search': [3, 0x300022],
         # request suggestions/:slug if keyword argument 'slug' is passed.
-        'suggestions': [0b001, 0],
-        'profile_image/:screen_name': [0b000, 0x6000000],
+        'suggestions': [1, 0],
+        'profile_image/:screen_name': [0, 0x6000000],
     },
     'trends': {
         # trends resources
-        ''                    : [0b001, 0],
-        'current'             : [0b001, 0x20000],
-        'daily'               : [0b001, 0x60000],
-        'weekly'              : [0b001, 0x60000],
+        ''                    : [1, 0],
+        'current'             : [1, 0x20000],
+        'daily'               : [1, 0x60000],
+        'weekly'              : [1, 0x60000],
         
         # local trends resources
-        'available': [0b001, 0x3000],
+        'available': [1, 0x3000],
         # 1 -> one
-        'one': [0b001, 0],
+        'one': [1, 0],
     },
     # TODO: Geo Resource
     'geo': {
@@ -507,60 +507,60 @@ apiinfo = {
         'place': (),
     },
     'direct_messages': {
-        ''           : [0b011, 0x3e],
-        'new'        : [0b110, 0x800182],
-        'sent'       : [0b011, 0x3e],
-        'destroy/:id': [0b110, 0x202],
+        ''           : [3, 0x3e],
+        'new'        : [6, 0x800182],
+        'sent'       : [3, 0x3e],
+        'destroy/:id': [6, 0x202],
     },
     'favorites': {
-        ''              : [0b011, 0x80022],
-        'create/:id'    : [0b110, 0x202],
-        'destroy/:id'   : [0b110, 0x202],
+        ''              : [3, 0x80022],
+        'create/:id'    : [6, 0x202],
+        'destroy/:id'   : [6, 0x202],
     },
     'account': {
-        'verify_credentials': [0b011, 2],
-        'rate_limit_status' : [0b010, 0],
-        'end_session'       : [0b110, 0],
-        'update_delivery_device': [0b110, 0x8000002],
+        'verify_credentials': [3, 2],
+        'rate_limit_status' : [2, 0],
+        'end_session'       : [6, 0],
+        'update_delivery_device': [6, 0x8000002],
         # TODO: test
-        'update_profile_colors': [0b110, 0x1f0000002],
+        'update_profile_colors': [6, 0x1f0000002],
         # TODO: test
-        'update_profile_image': [0b110, 0x200000002],
+        'update_profile_image': [6, 0x200000002],
         # TODO: test
-        'update_profile_background_image': [0b110, 0x600000002],
-        'update_profile': [0b110, 0x7800000002],
+        'update_profile_background_image': [6, 0x600000002],
+        'update_profile': [6, 0x7800000002],
     },
     'legal': {
-        'tos'    : [0b001, 0],
-        'privacy': [0b001, 0],
+        'tos'    : [1, 0],
+        'privacy': [1, 0],
     },
     'help': {
-        'test'   : [0b000, 0],
+        'test'   : [0, 0],
     },
     
     # block resources
     'blocks': {
-        'create'  : [0b110, 0x182],
-        'destroy' : [0b110, 0x182],
+        'create'  : [6, 0x182],
+        'destroy' : [6, 0x182],
         # TODO: http 401
-        'exists'  : [0b011, 0x182],
+        'exists'  : [3, 0x182],
         'blocking': {
-            ''    : [0b011, 0x22],
-            'ids' : [0b011, 0],
+            ''    : [3, 0x22],
+            'ids' : [3, 0],
         },
     },
     # notification resources
     # TODO: test
     'notifications': {
-        'follow': [0b110, 0x182],
-        'leave' : [0b110, 0x182],
+        'follow': [6, 0x182],
+        'leave' : [6, 0x182],
     },
     
     # oauth resources
     # TODO: implement
     'oauth': {
         'request_token': [],
-        'authorize': [0b000, 0],
+        'authorize': [0, 0],
         'authenticate': [],
         'access_token': [],
     },
@@ -568,49 +568,49 @@ apiinfo = {
     
     # friends and followers resources
     'friends': {
-        'ids': [0b011, 0x400180],
+        'ids': [3, 0x400180],
     },
     'followers': {
-        'ids': [0b011, 0x400180],
+        'ids': [3, 0x400180],
     },
 
     # friendships resources
     'friendships': {
-        'create'  : [0b110, 0x8000000182],
-        'destroy' : [0b110, 0b110000010],
-        'exists'  : [0b001, 0x30000000000],
-        'show'    : [0b001, 0x3c0000000000],
-        'incoming': [0b011, 1<<22],
-        'outgoing': [0b011, 1<<22],
+        'create'  : [6, 0x8000000182],
+        'destroy' : [6, 0b110000010],
+        'exists'  : [1, 0x30000000000],
+        'show'    : [1, 0x3c0000000000],
+        'incoming': [3, 1<<22],
+        'outgoing': [3, 1<<22],
     },
     
     # list resources
     ':user/lists': {
-        '': [0b011, 1<<22],
-        ':id/statuses' : [0b001, (1<<20)+0b0101110],
-        'memberships'  : [0b011, 1<<22],
-        'subscriptions': [0b011, 1<<22]
+        '': [3, 1<<22],
+        ':id/statuses' : [1, (1<<20)+0b0101110],
+        'memberships'  : [3, 1<<22],
+        'subscriptions': [3, 1<<22]
      },
-    ':user/lists_create': [0b110, (1<<35)+(1<<46)+(1<<47)],
-    ':user/lists_update/:id': [0b110, (1<<35)+(1<<46)+(1<<47)],
-    ':user/lists_delete/:id': [0b110, 1<<19],
+    ':user/lists_create': [6, (1<<35)+(1<<46)+(1<<47)],
+    ':user/lists_update/:id': [6, (1<<35)+(1<<46)+(1<<47)],
+    ':user/lists_delete/:id': [6, 1<<19],
     # list member resources
-    ':user/:list_id/members': [0b011, (1<<48)+(1<<22)+2],
-    ':user/:list_id/members_create': [0b110, (1<<9)+(1<<50)],
-    ':user/:list_id/members_delete': [0b110, (1<<9)+(1<<50)],
+    ':user/:list_id/members': [3, (1<<48)+(1<<22)+2],
+    ':user/:list_id/members_create': [6, (1<<9)+(1<<50)],
+    ':user/:list_id/members_delete': [6, (1<<9)+(1<<50)],
     # TODO: test
-    ':user/:list_id/create_all'    : [0b110, 0b110000000],
+    ':user/:list_id/create_all'    : [6, 0b110000000],
     # TODO: test
-    ':user/:list_id/ismemberof/:id': [0b011, (1<<9)+(1<<50)+2],
+    ':user/:list_id/ismemberof/:id': [3, (1<<9)+(1<<50)+2],
     
     # list subscribers resources
-    ':user/:list_id/subscribers': [0b011, (1<<48)+(1<<22)+2],
+    ':user/:list_id/subscribers': [3, (1<<48)+(1<<22)+2],
     # TODO: test
-    ':user/:list_id/subscribers_create': [0b110, 1<<50],
+    ':user/:list_id/subscribers_create': [6, 1<<50],
     # TODO: test
-    ':user/:list_id/subscribers_delete': [0b110, 1<<50],
+    ':user/:list_id/subscribers_delete': [6, 1<<50],
     # TODO: test
-    ':user/:list_id/issubscriberof/:id': [0b011, 0x4000000000202],
+    ':user/:list_id/issubscriberof/:id': [3, 0x4000000000202],
     
 
     #
@@ -619,10 +619,10 @@ apiinfo = {
     'streaming': {
         'statuses': {
             # http://dev.twitter.com/doc/post/statuses/filter
-            'filter'   : [0b110, (1<<51)+(1<<52)+(1<<53)+(1<<54)],
-            'firehose' : [0b011, (1<<53)+(1<<54)],
-            'retweet'  : [0b011, 1<<53],
-            'sample'   : [0b011, (1<<53)+(1<<54)],
+            'filter'   : [6, (1<<51)+(1<<52)+(1<<53)+(1<<54)],
+            'firehose' : [3, (1<<53)+(1<<54)],
+            'retweet'  : [3, 1<<53],
+            'sample'   : [3, (1<<53)+(1<<54)],
             },   
     },
     
@@ -631,7 +631,7 @@ apiinfo = {
     #
     'userstreaming': {
         # http://dev.twitter.com/pages/user_streams
-        'user': [0b010, 0]
+        'user': [2, 0]
     }
     
     #
