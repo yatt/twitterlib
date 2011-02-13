@@ -62,6 +62,9 @@ except:
 #    key/secret
 # 2. application access /oauth/request_token and
 #    get request token 
+# 2*. IF APP IS ON WEB  set `oauth_callback' parameter
+#    check whether your app setting is `browser client'
+#    (not `desktop client')
 # 3. application display url to /oauth/authorize.
 #    application set `oauth_token' to HTTP GET 
 #    parameter.
@@ -232,9 +235,13 @@ class TwitterOAuth(object):
         
         return req
     
-    def getRequestToken(self):
+    def getRequestToken(self, callback_url=None):
+        #url = self.p('/oauth/request_token')
         url = self.p('/oauth/request_token')
-        req = self.buildRequest('GET', url)
+        if callback_url:
+            req = self.buildRequest('GET', url, oauth_callback=callback_url)
+        else:
+            req = self.buildRequest('GET', url)
         conn = self.opener.open(req)
         cont = conn.read()
         dic = cgi.parse_qs(cont)
@@ -242,7 +249,8 @@ class TwitterOAuth(object):
         self.rtok.sec = dic['oauth_token_secret'][0]
         
     def getVerifier(self):
-        url = self.p('/oauth/authorize?oauth_token=' + self.rtok.tok)
+        p = '/oauth/authorize?oauth_token=' + self.rtok.tok
+        url = self.p(p)
         try:
             pin = self.verify(url)
         except Exception, e:
@@ -348,7 +356,7 @@ class TwitterOAuth(object):
         return None
 
     def saveVerifier(self, verifier):
-        return None
+        self.verifier = verifier
     def loadVerifier(self):
         return None
     def verify(self, url):
