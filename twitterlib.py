@@ -247,6 +247,10 @@ class TwitterOAuth(object):
         dic = cgi.parse_qs(cont)
         self.rtok.tok = dic['oauth_token'][0]
         self.rtok.sec = dic['oauth_token_secret'][0]
+    
+    def setRequestToken(self, tok, sec):
+        self.rtok.tok = tok
+        self.rtok.sec = sec
         
     def getVerifier(self):
         p = '/oauth/authorize?oauth_token=' + self.rtok.tok
@@ -256,6 +260,9 @@ class TwitterOAuth(object):
         except Exception, e:
             raise e
         self.verifier = pin
+    
+    def setVerifier(self, verifier):
+        self.verifier = verifier
     
     def getAccessToken(self):
         url = self.p('/oauth/access_token')
