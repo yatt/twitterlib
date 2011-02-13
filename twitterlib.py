@@ -465,7 +465,7 @@ apiinfo = {
         'update'              : [6, 0x1fc03],
         'destroy/:id'         : [6, 0x203],
         'retweet/:id'         : [6, 0x203],
-        #'retweets/:id'        : [0b011, 0x203],
+        #'retweets/:id'        : [3, 0x203],
         ':id/retweeted_by': {
             ''                : [3, 0x1b],
             'ids'             : [3, 0x1b],
@@ -577,7 +577,7 @@ apiinfo = {
     # friendships resources
     'friendships': {
         'create'  : [6, 0x8000000182],
-        'destroy' : [6, 0b110000010],
+        'destroy' : [6, 0x182],
         'exists'  : [1, 0x30000000000],
         'show'    : [1, 0x3c0000000000],
         'incoming': [3, 1<<22],
@@ -587,7 +587,7 @@ apiinfo = {
     # list resources
     ':user/lists': {
         '': [3, 1<<22],
-        ':id/statuses' : [1, (1<<20)+0b0101110],
+        ':id/statuses' : [1, (1<<20)+0x2e],
         'memberships'  : [3, 1<<22],
         'subscriptions': [3, 1<<22]
      },
@@ -599,7 +599,7 @@ apiinfo = {
     ':user/:list_id/members_create': [6, (1<<9)+(1<<50)],
     ':user/:list_id/members_delete': [6, (1<<9)+(1<<50)],
     # TODO: test
-    ':user/:list_id/create_all'    : [6, 0b110000000],
+    ':user/:list_id/create_all'    : [6, 0x180],
     # TODO: test
     ':user/:list_id/ismemberof/:id': [3, (1<<9)+(1<<50)+2],
     
