@@ -8,9 +8,18 @@ import hashlib
 import urllib
 import urllib2
 import cookielib
-import json
 import cgi
-import json
+# json
+try:
+    # python2.6 and later
+    import json
+except:
+    try:
+        # for gae
+        from django.utils import simplejson as json
+    except:
+        # python2.5
+        import simplejson as json
 
 # え、効かないけど・・・
 #import socket
