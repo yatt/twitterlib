@@ -8,9 +8,6 @@ import sys
 import os
 import twitterlib
 
-CONSUMER_KEY = 'e77rBklZzpvnA7Nk3PQcA'
-CONSUMER_SECRET = 'qEZLZKonGTIs3NoJkcI9KQQvCbSoTzKg5SmDaOuyM'
-
 def main():
     if len(sys.argv) < 3:
         print 'usage: %s consumer_key consumer_secret' % __file__
