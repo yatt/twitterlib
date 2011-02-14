@@ -1,0 +1,28 @@
+#! /usr/bin/python2.6
+# coding: utf-8
+#
+# simple twitter client
+#
+
+import sys
+import os
+import twitterlib
+
+CONSUMER_KEY = 'e77rBklZzpvnA7Nk3PQcA'
+CONSUMER_SECRET = 'qEZLZKonGTIs3NoJkcI9KQQvCbSoTzKg5SmDaOuyM'
+
+def main():
+    if len(sys.argv) < 3:
+        print 'usage: %s consumer_key consumer_secret' % __file__
+        return
+    key = sys.argv[1]
+    key = CONSUMER_KEY
+    sec = sys.argv[2]
+    sec = CONSUMER_SECRET
+    api = twitterlib.API(twitterlib.TwitterOAuth(key, sec))
+    api.auth()
+    import code
+    code.InteractiveConsole(locals()).interact()
+
+if __name__ == '__main__':
+    main()
