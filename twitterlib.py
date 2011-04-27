@@ -157,7 +157,6 @@ class TwitterOAuth(object):
                 'u': TwitterOAuth.UserStreamSite
                 }[path[0]]
             path = path[1:]
-        print path
         if path == '/search':
             site = TwitterOAuth.SearchSite
         url = scheme + '://' + site + path
