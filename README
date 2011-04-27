@@ -1,16 +1,27 @@
+requirements
+    - twitterlib require 2.5 and higher
+    - simplejson if python2.5 ( except google app  eggine )
+
 twitterlib module is a simple and useful twitter api client library.
 twitterlib module provides
   * oauth authentication
-  * easy way to access api
-  * Both http and https connection
-  * Search API
-  * Streaming API
-  * User Streaming API
+  * easy way to access api (classic, streaming and user streaming api)
+  * support both http and https
 
-programmer have only to provide comsumer key/secret and define
+and twitterlib support environment below.
+  * Django
+  * Google App Engine
+
+So you can use this module for
+  * console application
+  * desktop application
+  * web application
+  * cloud application
+
+you have only to provide OAuth comsumer key/secret and define
 interface for saving/loading access token.
 
-usage example below.
+sample code below.
 twitterlib.API enables programmer to access rest api with url like method name
 
 >>> # build-in very simple CLI client interface
