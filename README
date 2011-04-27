@@ -8,7 +8,7 @@ twitterlib module provides
   * easy way to access api (classic, streaming and user streaming api)
   * support both http and https
 
-and twitterlib support environment below.
+and twitterlib support environments below.
   * Django
   * Google App Engine
 
@@ -18,10 +18,12 @@ So you can use this module for
   * web application
   * cloud application
 
-you have only to provide OAuth comsumer key/secret and define
-interface for saving/loading access token.
+you have only to provide OAuth comsumer key/secret and define nterface for saving/loading access token.
 
-sample code below.
+
+
+
+[[sample code]]
 twitterlib.API enables programmer to access rest api with url like method name
 
 >>> # build-in very simple CLI client interface
