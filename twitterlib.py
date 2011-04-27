@@ -125,6 +125,7 @@ logger = Logger()
 #
 class TwitterOAuth(object):
     Site = 'api.twitter.com'
+    SearchSite = 'search.twitter.com'
     StreamSite = 'stream.twitter.com'
     UserStreamSite = 'userstream.twitter.com'
     def __init__(self, consumer_key, consumer_secret, use_https=False):
@@ -156,7 +157,11 @@ class TwitterOAuth(object):
                 'u': TwitterOAuth.UserStreamSite
                 }[path[0]]
             path = path[1:]
+        print path
+        if path == '/search':
+            site = TwitterOAuth.SearchSite
         url = scheme + '://' + site + path
+        print 'url:',url
         logger.log(0, 'OAuth.p oauth:',url)
         return url
     
@@ -394,6 +399,10 @@ class TwitterOAuth(object):
 #
 
 paraminfo = [
+    #"""3 count int f
+    #2 delimited str f
+    #1 follow int f
+    #""".split()
     # streaming api
     ['count', int, False],
     ['delimited', str, False],
@@ -636,6 +645,10 @@ apiinfo = {
     # TODO: test
     ':user/:list_id/issubscriberof/:id': [3, 0x4000000000202],
     
+    #
+    # Search .. search.twitter.com
+    #
+    'search': [3, 1 << 21], # TODO: 
 
     #
     # Streaming API
