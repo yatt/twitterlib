@@ -7,6 +7,7 @@ twitterlib module provides
   * oauth authentication
   * easy way to access api (classic, streaming and user streaming api)
   * support both http and https
+  * event-driven programming
 
 you can use this module for
   * console application
