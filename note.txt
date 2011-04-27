@@ -1,7 +1,7 @@
 ***TODO
 how interface should provide to non-authrequired api.
 hot interface should provide to web app.
-streaming api
+test suite
 
 *** ChangeLog
 2010/11/04 Write base code including OAuth association
@@ -24,6 +24,7 @@ streaming api
 2010/11/25 Support Friendships resources
 2010/11/25 Support List resources
 2011/01/25 Support Streaming API, User Streaming API support
+2011/04/28 Support Search API
 
 ** Progress
 100 Timeline
@@ -48,11 +49,11 @@ streaming api
 100 Legal
 100 Help
  90 Streamed Tweets
-  0 Search
+ 40 Search
 
 2010/11/20  9/23
 2010/11/22 11/23
 2010/11/24 15/23
 2010/11/25 16/23
-
+2011/04/28 17/23
 
