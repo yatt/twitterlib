@@ -161,7 +161,6 @@ class TwitterOAuth(object):
         if path == '/search':
             site = TwitterOAuth.SearchSite
         url = scheme + '://' + site + path
-        print 'url:',url
         logger.log(0, 'OAuth.p oauth:',url)
         return url
     
