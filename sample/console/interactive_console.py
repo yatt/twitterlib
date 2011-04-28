@@ -13,9 +13,7 @@ def main():
         print 'usage: %s consumer_key consumer_secret' % __file__
         return
     key = sys.argv[1]
-    key = CONSUMER_KEY
     sec = sys.argv[2]
-    sec = CONSUMER_SECRET
     api = twitterlib.API(twitterlib.TwitterOAuth(key, sec))
     api.auth()
     import code
