@@ -106,16 +106,19 @@ class Token(object):
 #
 
 import sys
+import codecs
+ENC = {'win32':'cp932'}.get(sys.platform, 'utf-8')
 class Logger(object):
-    def __init__(self, level=1, out=sys.stdout):
+    def __init__(self, level=1, out=codecs.getwriter(ENC)(sys.stdout)):
         self.level = level
         self.out = out
     def log(self, level, *message):
         if not isinstance(level, int):
             raise Exception('int expected for argument `level\'.')
         if level > self.level:
-            self.out.write(str(level) + ' ' + ' '.join(map(str, message)) + '\n')
-logger = Logger()
+            msg = ' '.join(map(unicode, message))
+            self.out.write('%s %s\n' % (level, msg))
+logger = Logger(0)
 
 # やっぱり、最初から最後までAPIからコントロールするべきなんじゃないかと思う
 #
@@ -186,9 +189,12 @@ class TwitterOAuth(object):
         logger.log(0, 'args:', kwargs)
         for key in kwargs:
             value = kwargs[key]
+            logger.log(0, 'check keyword arugment `%s\' => %s' % (key, isinstance(value, unicode)))
             if isinstance(value, unicode):
+                logger.log(0, u'encode %s' % value)
                 dat[key] = value.encode('utf-8')
             else:
+                logger.log(0, u'through ' + value)
                 dat[key] = str(value)
         # sign
         prm = '&'.join('%s=%s' % (q(k), qq(dat[k])) for k in sorted(dat))
@@ -1040,3 +1046,4 @@ def objectwrap(item):
 # act = UserStreamAction(api, Handler())
 # act.start()
 #
+
