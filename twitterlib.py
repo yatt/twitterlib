@@ -194,7 +194,7 @@ class TwitterOAuth(object):
                 logger.log(0, u'encode %s' % value)
                 dat[key] = value.encode('utf-8')
             else:
-                logger.log(0, u'through ' + value)
+                logger.log(0, u'through %s' % value)
                 dat[key] = str(value)
         # sign
         prm = '&'.join('%s=%s' % (q(k), qq(dat[k])) for k in sorted(dat))
@@ -829,9 +829,10 @@ class API(object):
             if require and not pname in kwargs:
                 raise Exception('argument "%s" is required.' % pname)
             if pname in kwargs and not isinstance(kwargs[pname], ptype):
-                raise Exception('argument "%s" is must be type %s' % (pname, ptype))
+                 if not (ptype is int and isinstance(kwargs[pname], long)):
+                     raise Exception('argument "%s" is must be type %s' % (pname, ptype))
             if pname in kwargs:
-                if   ptype == bool and kwargs[pname] is True:
+                if ptype is bool and kwargs[pname] is True:
                     param[pname] = 't'
                 else:
                     param[pname] = kwargs[pname]
