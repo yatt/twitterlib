@@ -256,13 +256,17 @@ class TwitterOAuth(object):
         self.rtok.sec = sec
         
     def getVerifier(self):
-        p = '/oauth/authorize?oauth_token=' + self.rtok.tok
-        url = self.p(p)
+        url = self.getVerifyURL()
         try:
             pin = self.verify(url)
         except Exception, e:
             raise e
         self.verifier = pin
+    
+    def getVerifyURL(self):
+        p = '/oauth/authorize?oauth_token=' + self.rtok.tok
+        url = self.p(p)
+        return url
     
     def setVerifier(self, verifier):
         self.verifier = verifier
