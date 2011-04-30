@@ -189,12 +189,9 @@ class TwitterOAuth(object):
         logger.log(0, 'args:', kwargs)
         for key in kwargs:
             value = kwargs[key]
-            logger.log(0, 'check keyword arugment `%s\' => %s' % (key, isinstance(value, unicode)))
             if isinstance(value, unicode):
-                logger.log(0, u'encode %s' % value)
                 dat[key] = value.encode('utf-8')
             else:
-                logger.log(0, u'through %s' % value)
                 dat[key] = str(value)
         # sign
         prm = '&'.join('%s=%s' % (q(k), qq(dat[k])) for k in sorted(dat))
@@ -245,7 +242,6 @@ class TwitterOAuth(object):
         return req
     
     def getRequestToken(self, callback_url=None):
-        #url = self.p('/oauth/request_token')
         url = self.p('/oauth/request_token')
         if callback_url:
             req = self.buildRequest('GET', url, oauth_callback=callback_url)
@@ -300,6 +296,16 @@ class TwitterOAuth(object):
         logger.log(0, 'url:', req.get_full_url())
         logger.log(0, 'authorization header:',req.authheader)
         self.opener.addheaders = [('Authorization', 'OAuth ' + req.authheader)]
+
+        # encode unicode to utf-8
+        kwargs = dict(kwargs)
+        for key in kwargs:
+            value = kwargs[key]
+            if isinstance(value, unicode):
+                kwargs[key] = value.encode('utf-8')
+            else:
+                kwargs[key] = str(value)
+
         postdata = urllib.urlencode(kwargs)
         logger.log(0, 'param line:',postdata)
         if method == 'POST':
