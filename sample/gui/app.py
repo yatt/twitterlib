@@ -56,9 +56,8 @@ class AuthDialog(object):
         
         self.btnTokenSet.Bind(wx.EVT_BUTTON, self.btnTokenSet_onClick)
         self.btnVerifier.Bind(wx.EVT_BUTTON, self.btnVerifier_onClick)
-        # TODO: delete
-        self.txtConsumerKey.Value = '3uKsjJkQhLpWwJ9M7XlH4g'
-        self.txtConsumerSecret.Value = 'HxMJBINiiCw8Oc1lFYWvydFqDjB9I7XmyD9vKpUmkRk'
+        self.txtConsumerKey.Value = ''
+        self.txtConsumerSecret.Value = ''
     
         self.TokenSetPhase()
     
