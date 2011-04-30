@@ -106,16 +106,19 @@ class Token(object):
 #
 
 import sys
+import codecs
+ENC = {'win32':'cp932'}.get(sys.platform, 'utf-8')
 class Logger(object):
-    def __init__(self, level=1, out=sys.stdout):
+    def __init__(self, level=1, out=codecs.getwriter(ENC)(sys.stdout)):
         self.level = level
         self.out = out
     def log(self, level, *message):
         if not isinstance(level, int):
             raise Exception('int expected for argument `level\'.')
         if level > self.level:
-            self.out.write(str(level) + ' ' + ' '.join(map(str, message)) + '\n')
-logger = Logger()
+            msg = ' '.join(map(unicode, message))
+            self.out.write('%s %s\n' % (level, msg))
+logger = Logger(0)
 
 # やっぱり、最初から最後までAPIからコントロールするべきなんじゃないかと思う
 #
@@ -239,7 +242,6 @@ class TwitterOAuth(object):
         return req
     
     def getRequestToken(self, callback_url=None):
-        #url = self.p('/oauth/request_token')
         url = self.p('/oauth/request_token')
         if callback_url:
             req = self.buildRequest('GET', url, oauth_callback=callback_url)
@@ -294,6 +296,16 @@ class TwitterOAuth(object):
         logger.log(0, 'url:', req.get_full_url())
         logger.log(0, 'authorization header:',req.authheader)
         self.opener.addheaders = [('Authorization', 'OAuth ' + req.authheader)]
+
+        # encode unicode to utf-8
+        kwargs = dict(kwargs)
+        for key in kwargs:
+            value = kwargs[key]
+            if isinstance(value, unicode):
+                kwargs[key] = value.encode('utf-8')
+            else:
+                kwargs[key] = str(value)
+
         postdata = urllib.urlencode(kwargs)
         logger.log(0, 'param line:',postdata)
         if method == 'POST':
@@ -823,9 +835,10 @@ class API(object):
             if require and not pname in kwargs:
                 raise Exception('argument "%s" is required.' % pname)
             if pname in kwargs and not isinstance(kwargs[pname], ptype):
-                raise Exception('argument "%s" is must be type %s' % (pname, ptype))
+                 if not (ptype is int and isinstance(kwargs[pname], long)):
+                     raise Exception('argument "%s" is must be type %s' % (pname, ptype))
             if pname in kwargs:
-                if   ptype == bool and kwargs[pname] is True:
+                if ptype is bool and kwargs[pname] is True:
                     param[pname] = 't'
                 else:
                     param[pname] = kwargs[pname]
@@ -1040,3 +1053,4 @@ def objectwrap(item):
 # act = UserStreamAction(api, Handler())
 # act.start()
 #
+
