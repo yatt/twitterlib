@@ -18,8 +18,8 @@ CONSUMER_SECRET = 'xHIaSAyhuTTcVrGa1BSSEASsZPYRkQ61SkjLnHnCIjA'
 
 
 def create_oauth():
-    #return twitterlib.TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET)
-    return twitterlib.TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, use_https=True) # for https only user
+    import consumer_token as ctok
+    return twitterlib.TwitterOAuth(ctok.token, ctok.secret, use_https=True) # for https only user
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
