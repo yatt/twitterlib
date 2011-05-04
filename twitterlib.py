@@ -5,10 +5,24 @@ import uuid
 import time
 import hmac
 import hashlib
-import urllib
-import urllib2
-import cookielib
 import cgi
+
+
+import sys
+py3 = sys.version_info[0] == 3
+if not py3:
+    import urllib
+    import urllib2
+    import cookielib
+else:
+    import urllib
+    import urllib.request as urllib2
+    import urllib.parse
+    import http
+    
+    import http.cookiejar as cookielib
+    urllib.urlencode = urllib.parse.urlencode
+
 # json
 try:
     # python2.6 and later
