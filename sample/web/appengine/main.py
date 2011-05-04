@@ -7,16 +7,6 @@ from appengine_utilities.sessions import Session
 import twitterlib
 
 
-#
-#
-# assign your application's consumer key/secret
-#
-#
-CONSUMER_KEY = 'ABq0OCA9l9rAC0SIOdXPMQ'
-CONSUMER_SECRET = 'xHIaSAyhuTTcVrGa1BSSEASsZPYRkQ61SkjLnHnCIjA'
-
-
-
 def create_oauth():
     import consumer_token as ctok
     return twitterlib.TwitterOAuth(ctok.token, ctok.secret, use_https=True) # for https only user
