@@ -972,11 +972,15 @@ class EventHandler(object):
 class PollingHandler(EventHandler):
     def __init__(self, api):
         super(PollingHandler, self).__init__(api)
-    def onEvent(self, _dummy):
-        self.callback()
+    def onEvent(self, jsondoc):
+        self.callback(jsondoc)
     def callback(self):
         pass
 
+class StreamHandler(EventHandler):
+    def __init__(self, api):
+        pass
+    
 class UserStreamHandler(EventHandler):
     def __init__(self, api):
         super(UserStreamHandler, self).__init__(api)
@@ -999,10 +1003,6 @@ class UserStreamHandler(EventHandler):
     def onUpdate(self, jsondoc):
         pass
 
-class StreamHandler(EventHandler):
-    def __init__(self, api):
-        pass
-    
 
 class Action(object):
     def __init__(self, api, handler):
@@ -1020,16 +1020,41 @@ class Action(object):
 
 import time
 class PollingAction(Action):
-    def __init__(self, api, handler, waittime=60):
+    def __init__(self, api, handler, interval=60, apitype='home_timeline'):
         super(PollingAction, self).__init__(api, handler)
-        self._waittime = waittime
-        self.__first = True
-    def next(self):
-        if not self.__first:
-            time.sleep(self._waittime)
+        assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline']
+        self.interval = interval
+        self.isfirst = True
+        self.lasttime = None
+        self.apitype = apitype
+        self.since_id = None
+        self.buf = []
+    def fill(self):
+        if not self.isfirst:
+            dif = self.interval - (time.time() - self.lasttime)
+            if dif > 0:
+                time.sleep(dif)
         else:
-            self.__first = False
-        return {}
+            self.isfirst = False
+        
+        self.lasttime = time.time()
+        apicall = getattr(self.api.statuses, self.apitype)
+        lst = None
+        if self.since_id:
+            lst = apicall(since_id=self.since_id)
+        else:
+            lst = apicall()
+        
+        self.buf.extend(lst)
+        
+        if len(lst) > 0:
+            self.since_id = lst[0].id
+        
+    def next(self):
+        while self.buf == []:
+            self.fill()
+        item = self.buf.pop(0)
+        return item
 
 class StreamAction(Action):
     def __init__(self, api, handler, streamtype='filter'):
