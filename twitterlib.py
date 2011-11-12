@@ -147,6 +147,10 @@ class TwitterOAuth(object):
     UserStreamSite = 'userstream.twitter.com'
     UploadSite = 'upload.twitter.com'
     def __init__(self, consumer_key, consumer_secret, use_https=False):
+        if type(consumer_key) == unicode:
+            consumer_key = str(consumer_key)
+        if type(consumer_secret) == unicode:
+            consumer_secret = str(consumer_secret)
         self.scheme = 'http' + ['', 's'][use_https]
         self.ctok = Token(consumer_key, consumer_secret)
         self.rtok = Token('', '')
