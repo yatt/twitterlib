@@ -145,6 +145,7 @@ class TwitterOAuth(object):
     SearchSite = 'search.twitter.com'
     StreamSite = 'stream.twitter.com'
     UserStreamSite = 'userstream.twitter.com'
+    UploadSite = 'upload.twitter.com'
     def __init__(self, consumer_key, consumer_secret, use_https=False):
         self.scheme = 'http' + ['', 's'][use_https]
         self.ctok = Token(consumer_key, consumer_secret)
@@ -168,10 +169,11 @@ class TwitterOAuth(object):
             # http://dev.twitter.com/pages/user_streams#ImportantItems
             logger.log(0, '*** userstreaming')
             scheme = 'https'
-        if path[0] in 'us':
+        if path[0] in 'usm':
             site = {
                 's': TwitterOAuth.StreamSite,
-                'u': TwitterOAuth.UserStreamSite
+                'u': TwitterOAuth.UserStreamSite,
+                'm': TwitterOAuth.UploadSite,
                 }[path[0]]
             path = path[1:]
         if path == '/search':
@@ -697,12 +699,19 @@ apiinfo = {
     'userstreaming': {
         # http://dev.twitter.com/pages/user_streams
         'user': [2, 0]
-    }
+    },
     
     #
     # Site Streaming API
     #
     # future support
+
+    #
+    # update status with media
+    # ref: https://dev.twitter.com/docs/api/1/post/statuses/update_with_media
+    #
+    'upload': {
+    }
 }
 
 class API(object):
