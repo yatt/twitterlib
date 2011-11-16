@@ -508,6 +508,20 @@ paraminfo = [
     ['include_entities',      bool, False],
     ['trim_user',             bool, False],
 ]
+
+#
+# [permission, parameters]
+#
+# permission:
+#     integer in range [0, 7]
+#     bit0: GET or POST
+#     bit1: authentication required or not
+#     Bit2: api limitation exists or not
+# parameters:
+#     integer
+#     if paraminfo[len(paraminfo) - i - 1] is available in
+#     specified api, then bit i is raised.
+#
 apiinfo = {
     'report_spam'            : [6, 0x182],
     'saved_searches': {
@@ -715,7 +729,18 @@ apiinfo = {
     # ref: https://dev.twitter.com/docs/api/1/post/statuses/update_with_media
     #
     'upload': {
-    }
+    },
+    
+    
+    # Activity API
+    # *  have not been announced officially yet,
+    #    url may change in future
+    'i': {
+        'activity': {
+            'about_me': [3, 0x13],
+            'by_friends': [3, 0x13],
+        },
+    },
 }
 
 class API(object):
@@ -987,7 +1012,7 @@ class PollingHandler(EventHandler):
         super(PollingHandler, self).__init__(api)
     def onEvent(self, jsondoc):
         self.callback(jsondoc)
-    def callback(self):
+    def callback(self, jsondoc):
         pass
 
 class StreamHandler(EventHandler):
@@ -1035,7 +1060,8 @@ import time
 class PollingAction(Action):
     def __init__(self, api, handler, interval=60, apitype='home_timeline'):
         super(PollingAction, self).__init__(api, handler)
-        assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline']
+        #assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline']
+        assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline', 'activity']
         self.interval = interval
         self.isfirst = True
         self.lasttime = None
@@ -1051,7 +1077,10 @@ class PollingAction(Action):
             self.isfirst = False
         
         self.lasttime = time.time()
-        apicall = getattr(self.api.statuses, self.apitype)
+        if apitype == 'activity':
+            apicall = self.api.i.activity.by_friends
+        else:
+            apicall = getattr(self.api.statuses, self.apitype)
         lst = None
         if self.since_id:
             lst = apicall(since_id=self.since_id)
