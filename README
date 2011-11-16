@@ -12,7 +12,7 @@ twitterlib module provides
         - Streaming
         - User Streaming
     * support both http and https
-    * event-driven programming model
+    * event-driven programming mechanizm
 
 you can use this module such applications below
     * console application
