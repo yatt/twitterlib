@@ -3,7 +3,7 @@
 
 #
 # =============================================
-#     WARNING (for CPython version < 2.6.3)
+#       WARNING (for CPython version < 2.6.3)
 # =============================================
 # because of intepreter bug, SSL connection
 # over http proxy will failure.
@@ -1103,7 +1103,8 @@ class PollingAction(Action):
     def __init__(self, api, handler, interval=60, apitype='home_timeline'):
         super(PollingAction, self).__init__(api, handler)
         #assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline']
-        assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline', 'activity']
+        #assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline', 'activity']
+        assert apitype in ['public_timeline', 'home_timeline', 'friends_timeline', 'user_timeline', 'activity/by_friends', 'activity/about_me']
         self.interval = interval
         self.isfirst = True
         self.lasttime = None
@@ -1119,8 +1120,10 @@ class PollingAction(Action):
             self.isfirst = False
         
         self.lasttime = time.time()
-        if self.apitype == 'activity':
+        if self.apitype == 'activity/by_friends':
             apicall = self.api.i.activity.by_friends
+        elif self.apitype == 'activity/about_me':
+            apicall = self.api.i.activity.about_me
         else:
             apicall = getattr(self.api.statuses, self.apitype)
         lst = None
