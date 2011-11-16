@@ -1,6 +1,7 @@
 requirements
     - twitterlib require 2.5 and higher
     - simplejson if python2.5 ( except google app  eggine )
+    - SSL connection over proxy requires 2.6.3 or higher (interpreter bug fixed)
 
 twitterlib module is a simple and useful twitter api client library.
 twitterlib module provides

@@ -1,6 +1,20 @@
 #!/usr/bin/python2.6
 # coding: utf-8
 
+#
+# =============================================
+#     WARNING (for CPython version < 2.6.3)
+# =============================================
+# because of intepreter bug, SSL connection
+# over http proxy will failure.
+# 
+# see : http://www.python.org/getit/releases/2.6.3/NEWS.txt
+# > - Issue #1424152: Fix for httplib, urllib2 to support SSL while working through
+# >   proxy. Original patch by Christopher Li, changes made by Senthil Kumaran.
+#
+#
+
+import os
 import uuid
 import time
 import hmac
@@ -134,6 +148,20 @@ class Logger(object):
             self.out.write('%s %s\n' % (level, msg))
 logger = Logger(0)
 
+def findProxy ():
+    proxy = {'http':'', 'https':''}
+    if sys.platform == 'win32':
+        # todo
+        pass
+    elif sys.platform in ['cygwin', 'linux2', 'linux3']:
+        ks = dict(map(lambda k: (k.upper(), os.environ[k]), os.environ.keys())) 
+        proxy['https'] = ks.get('HTTPS_PROXY')
+        proxy['http'] = ks.get('HTTP_PROXY')
+        if proxy['http'] is None and proxy['https'] is None:
+            proxy = None
+    logger.log(0, 'findProxy:', proxy)
+    return proxy
+
 # やっぱり、最初から最後までAPIからコントロールするべきなんじゃないかと思う
 #
 # api = API oauth()
@@ -157,9 +185,20 @@ class TwitterOAuth(object):
         self.atok = Token('', '')
         self.verifier = None
         self.opener = urllib2.build_opener()
-        self.authdone = False
         # for debug
         #self.opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
+        self.authdone = False
+
+        self._proxies = None
+    def _setProxies(self, proxies):
+        self.proxies = proxies
+        for i, handler in enumerate(self.opener.handlers):
+            if isinstance(handler, urllib2.ProxyHandler):
+                self.opener.handlers[i].proxies = proxies
+                #print self.opener.handlers[i].proxies
+        else:
+            self.opener.add_handler(urllib2.ProxyHandler(proxies))
+
     @property
     def authorized(self):
         return self.authdone
@@ -427,11 +466,18 @@ class TwitterOAuth(object):
 
 
 #
-# 認証系のAPIのレスポンスをdictに変換するようにすれば、
-# 認証まで含めてAPIに処理を外部化できるかもしれない。
+# [permission, parameters]
 #
+# permission:
+#     integer in range [0, 7]
+#     bit0: GET or POST
+#     bit1: authentication required or not
+#     Bit2: api limitation exists or not
+# parameters:
+#     integer
+#     if paraminfo[len(paraminfo) - i - 1] is available in
+#     specified api, then bit i is raised.
 #
-
 paraminfo = [
     #"""3 count int f
     #2 delimited str f
@@ -508,20 +554,6 @@ paraminfo = [
     ['include_entities',      bool, False],
     ['trim_user',             bool, False],
 ]
-
-#
-# [permission, parameters]
-#
-# permission:
-#     integer in range [0, 7]
-#     bit0: GET or POST
-#     bit1: authentication required or not
-#     Bit2: api limitation exists or not
-# parameters:
-#     integer
-#     if paraminfo[len(paraminfo) - i - 1] is available in
-#     specified api, then bit i is raised.
-#
 apiinfo = {
     'report_spam'            : [6, 0x182],
     'saved_searches': {
@@ -730,8 +762,7 @@ apiinfo = {
     #
     'upload': {
     },
-    
-    
+
     # Activity API
     # *  have not been announced officially yet,
     #    url may change in future
@@ -745,7 +776,7 @@ apiinfo = {
 
 class API(object):
     callcount = 0
-    def __init__(self, oauthobj, version=1, format='json', path=[], current=apiinfo, streaming_version=1, userstreaming_version=2):
+    def __init__(self, oauthobj, version=1, format='json', path=[], current=apiinfo, streaming_version=1, userstreaming_version=2, proxies=None):
         self._oauthobj = oauthobj
         self._version = version
         self._streaming_version = streaming_version
@@ -753,11 +784,20 @@ class API(object):
         self._format = format
         self._path = path
         self._current = current
+
+        self.proxies = proxies
+        self._oauthobj._setProxies(proxies)
+    def setProxies(proxies):
+        self.proxies = proxies
+        self._oauthobj._setProxies(proxies)
+
     def p(self, relpath):
         if relpath.startswith('/streaming'):
             path = 's/' + str(self._streaming_version) + relpath[len('/streaming'):]
         elif relpath.startswith('/userstreaming'):
             path = 'u/' + str(self._userstreaming_version) + relpath[len('/userstreaming'):]
+        elif relpath.startswith('/i/'): # activity api (not official announced)
+            path = relpath
         else:
             path = '/' + str(self._version) + relpath
         path = path + '.' + self._format
@@ -786,8 +826,11 @@ class API(object):
             kwargs['delimited'] = 'length'
        
         if auth_required:
+            cont = None
             try:
                 conn = self._oauthobj.apicall(method, path, **kwargs)
+                cont = conn.read()
+                logger.log(-1, 'content readed:\n' + cont)
             except Exception, e:
                 raise e
             if relpath.startswith('/streaming'):
@@ -796,7 +839,6 @@ class API(object):
             if relpath.startswith('/userstreaming'):
                 logger.log(0, '**User Streaming')
                 return UserStream(conn, self)
-            cont = conn.read()
             return self.asvalidformat(cont)
         url = self._oauthobj.p(path)
         data = urllib.urlencode(kwargs)
@@ -915,7 +957,7 @@ class API(object):
                     r = r.replace(':%s' % w, '')
                 #print '"%s" "%s" "%s"'%( p,r,k)
                 if r == p:
-                    return API(self._oauthobj, self._version, self._format, self._path + [k], self._current[k])
+                    return API(self._oauthobj, self._version, self._format, self._path + [k], self._current[k], self._streaming_version, self._userstreaming_version, self.proxies)
         return self.__dict__[name]
     def auth(self):
         try:
@@ -1077,7 +1119,7 @@ class PollingAction(Action):
             self.isfirst = False
         
         self.lasttime = time.time()
-        if apitype == 'activity':
+        if self.apitype == 'activity':
             apicall = self.api.i.activity.by_friends
         else:
             apicall = getattr(self.api.statuses, self.apitype)
