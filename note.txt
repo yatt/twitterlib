@@ -25,6 +25,8 @@ test suite
 2010/11/25 Support List resources
 2011/01/25 Support Streaming API, User Streaming API support
 2011/04/28 Support Search API
+2011/11/16 Support Activity API (does not official announced)
+2011/11/16 Support HTTP Proxy
 
 ** Progress
 100 Timeline
