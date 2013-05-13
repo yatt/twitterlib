@@ -776,7 +776,7 @@ apiinfo = {
 
 class API(object):
     callcount = 0
-    def __init__(self, oauthobj, version=1, format='json', path=[], current=apiinfo, streaming_version=1, userstreaming_version=2, proxies=None):
+    def __init__(self, oauthobj, version=1.1, format='json', path=[], current=apiinfo, streaming_version=1, userstreaming_version=2, proxies=None):
         self._oauthobj = oauthobj
         self._version = version
         self._streaming_version = streaming_version
