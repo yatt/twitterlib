@@ -10,7 +10,7 @@ twitterlib python library is a simple and useful twitter api client library.
  - Search API
  - Streaming API
  - User Streaming API
-* support both http and https
+* support both http and https (for API v1.0)
 * event-driven programming mechanizm
 
 ###you can use this module such applications below
@@ -38,7 +38,11 @@ In addition,
 * SSL connection over proxy requires 2.6.3 or higher (< 2.6.3 contain interpreter bug; [issue1424152](http://bugs.python.org/issue1424152))
 
 
+## instal
 
+```sh
+pip install git+https://github.com/yatt/twitterlib.git
+```
 
 
 ## sample code
