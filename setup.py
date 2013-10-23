@@ -4,9 +4,9 @@ from setuptools import setup, find_packages
 from twitterlib import __author__, __version__, __license__
  
 setup(
-    name = 'pip_github_test',
+    name = 'twitterlib',
     version = __version__,
-    description = 'Sample for installing python library from github using pip',
+    description = '1 file Twitter library for Python',
     license = __license__,
     author = __author__,
     author_email = 'darknesssharp@gmail.com',
