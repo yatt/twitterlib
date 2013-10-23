@@ -38,7 +38,7 @@ In addition,
 * SSL connection over proxy requires 2.6.3 or higher (< 2.6.3 contain interpreter bug; [issue1424152](http://bugs.python.org/issue1424152))
 
 
-## instal
+## install
 
 ```sh
 pip install git+https://github.com/yatt/twitterlib.git
