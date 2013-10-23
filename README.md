@@ -46,6 +46,7 @@ pip install git+https://github.com/yatt/twitterlib.git
 
 
 ## sample code
+
 twitterlib.API enables programmer to access rest api with url like method name
 ```python
 >>> # built-in simple CLI client interface
@@ -73,7 +74,7 @@ pin code: ******* (input from user)
 >>> api.lists_delete(user='youraccount', name='newlistname')
 ```
 
-### sample code (get token value from environment variable)
+## sample code (get token from env)
 
 ```bash
 export twitterlib_consumer_key=CONSUMERTOKENSTRING
