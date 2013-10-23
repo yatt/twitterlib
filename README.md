@@ -72,3 +72,20 @@ pin code: ******* (input from user)
 >>> # delete list /1/:user/lists with HTTP DELETE (or POST)
 >>> api.lists_delete(user='youraccount', name='newlistname')
 ```
+
+### sample code (get token value from environment variable)
+
+```bash
+export twitterlib_consumer_key=CONSUMERTOKENSTRING
+export twitterlib_consumer_secret=SECRETSTRING
+export twitterlib_access_key=USERSACCESSKEYSTRING
+export twitterlib_access_secret=USERACCESSSECRETSTRING
+```
+
+```python
+>>> import twitterlib
+>>> auth = twitterlib.TwitterOAuth() # get from environment vairable
+>>> api = twitterlib.API(auth)
+>>> api.statuses.update(status=u'twitterlib')
+```
+
