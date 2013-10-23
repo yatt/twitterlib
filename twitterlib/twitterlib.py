@@ -174,7 +174,7 @@ class TwitterOAuth(object):
     StreamSite = 'stream.twitter.com'
     UserStreamSite = 'userstream.twitter.com'
     UploadSite = 'upload.twitter.com'
-    def __init__(self, consumer_key, consumer_secret, use_https=False):
+    def __init__(self, consumer_key='env', consumer_secret='env', use_https=False):
         if type(consumer_key) == unicode:
             consumer_key = str(consumer_key)
         if type(consumer_secret) == unicode:
@@ -190,6 +190,22 @@ class TwitterOAuth(object):
         self.authdone = False
 
         self._proxies = None
+
+        if consumer_key == 'env':
+            self.try_load_from_env()
+
+    def try_load_from_env(self):
+        dic = {
+            'twitterlib_consumer_key': 'self.ctok.tok',
+            'twitterlib_consumer_secret': 'self.ctok.sec',
+            'twitterlib_access_key': 'self.atok.tok',
+            'twitterlib_access_secret': 'self.atok.sec',
+            }
+        for key in dic:
+            if key in os.environ:
+                cmd = '%s = "%s"' % (dic[key], os.environ[key])
+                exec cmd
+
     def _setProxies(self, proxies):
         self.proxies = proxies
         for i, handler in enumerate(self.opener.handlers):
